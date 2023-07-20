@@ -35,14 +35,6 @@ sub main
 	chomp;       # strip record separator
 	s|||g;
 	if ($opt_I){printf(bugin_fp "%s\n", $_);}
-	#	unless (m|<entry|){print $_; next line;}
-	# s|<!--.*?-->||gio;
-	#	next line if (m|<entry[^>]*del=\"y|io);
-	#	next line if (m|<entry[^>]*sup=\"y|io);
-	# $h = &get_hex_h($_, "hex", 1); # the 1 says to remove stress etc
-	# $eid = &get_tag_attval($_, "entry", "eid");
-	# $e_eid = &get_dps_entry_id($_);
-	# $_ = &reduce_idmids($_);
 	# s|£|&\#x00A3;|g;
 	$_ = restructure::delabel($_);	
 	# $tagname = restructure::get_tagname($bit);    
@@ -72,7 +64,7 @@ sub add_sense_numbers
     foreach $bit (@BITS){
 	if ($bit =~ s|&fk;||gi){
 	    my $se2ct = ($bit =~ s|(</se2>)|\1|gi);
-	    $bit = restructure::set_tag_attval($bit, "msDict", "se2ct", $se2ct); 
+#	    $bit = restructure::set_tag_attval($bit, "msDict", "se2ct", $se2ct); 	    
 	    $bit = &add_sensenums($bit);
 	}
 	$res .= $bit;
@@ -89,10 +81,10 @@ sub add_sensenums
     $e =~ s|(<se2[ >].*?</se2>)|&split;&fk;$1&split;|gi;
     @BITS = split(/&split;/, $e);
     $res = "";
+    my $sensenum = 0;
     foreach $bit (@BITS){
 	if ($bit =~ s|&fk;||gi){
-	    my $sensenum = restructure::get_tag_attval($bit, "se2", "num"); 
-	    $bit = restructure::set_tag_attval($bit, "msDict", "sensenum", $sensenum);
+	    $bit = restructure::set_tag_attval($bit, "msDict", "sensenum", ++$sensenum);
 	}
 	$res .= $bit;
     }    
@@ -246,7 +238,7 @@ sub inherit_pos
     $res = "";
     foreach my $bit (@BITS){
 	if ($bit =~ s|&fk;||gi){
-	    my $pos = restructure::get_tag_contents($bit, "pos");
+	    my $pos = restructure::get_tag_attval($bit, "pos", "value"); 
 	    $bit =~ s|<msDict |<msDict pos=\"$pos\" |gi;
 	}
 	$res .= $bit;
